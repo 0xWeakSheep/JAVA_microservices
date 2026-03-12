@@ -157,11 +157,11 @@ export const reviewApi = {
 
   // 获取电影的评论
   getByMovieId: (movieId: number): Promise<Review[]> =>
-    apiRequest(`/reviews/movie/${movieId}`),
+    apiRequest(`/reviews?movieId=${movieId}`),
 
   // 获取用户的评论
   getByUserId: (userId: number): Promise<Review[]> =>
-    apiRequest(`/reviews/user/${userId}`),
+    apiRequest(`/reviews?userId=${userId}`),
 
   // 创建评论
   create: (review: Omit<Review, "reviewId" | "createdAt">): Promise<Review> =>
@@ -197,7 +197,7 @@ export const userApi = {
 
   // 更新用户权限
   updatePermission: (userId: number, permission: boolean): Promise<User> =>
-    apiRequest(`/users/${userId}/permission?permission=${permission}`, {
-      method: "PUT",
+    apiRequest(`/users/${userId}/permission?value=${permission}`, {
+      method: "PATCH",
     }),
 };

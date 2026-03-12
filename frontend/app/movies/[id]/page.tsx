@@ -82,11 +82,8 @@ export default function MovieDetailPage() {
 
     setSubmitting(true);
     try {
-      const userData = JSON.parse(user);
       await reviewApi.create({
         movieId,
-        userId: userData.userId,
-        username: userData.username,
         content: reviewContent,
         score: reviewScore,
       });

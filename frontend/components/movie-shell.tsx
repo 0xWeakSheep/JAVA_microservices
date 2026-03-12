@@ -1,10 +1,15 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { clearAuthSession, loadAuthSession, saveAuthSession, type AuthSession, type AuthUser } from "../lib/auth";
+import {
+  clearAuthSession,
+  loadAuthSession,
+  saveAuthSession,
+  type AuthSession,
+  type AuthUser,
+} from "../lib/auth";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:3001/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:3001/api";
 
 type User = AuthUser;
 
@@ -29,6 +34,13 @@ type Review = {
   title?: string;
 };
 
+type LogEntry = {
+  id: number;
+  methodName: string;
+  userName: string;
+  timestamp: string;
+};
+
 type AuthMode = "login" | "register";
 
 type ApiError = {
@@ -43,6 +55,19 @@ const emptyMovieForm = {
   posterImage: "",
 };
 
+function toDateInputValue(value?: string) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toISOString().slice(0, 10);
+}
+
 export function MovieShell() {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [user, setUser] = useState<User | null>(null);
@@ -51,9 +76,12 @@ export function MovieShell() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [logLoading, setLogLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [editingMovieId, setEditingMovieId] = useState<number | null>(null);
   const [movieForm, setMovieForm] = useState(emptyMovieForm);
 
   useEffect(() => {
@@ -70,13 +98,22 @@ export function MovieShell() {
     if (!user) {
       return;
     }
+
     void loadMovies();
+    if (user.manager) {
+      void loadLogs();
+    }
   }, [user]);
 
   function clearSessionState() {
     clearAuthSession();
     setToken(null);
     setUser(null);
+  }
+
+  function resetMovieEditor() {
+    setEditingMovieId(null);
+    setMovieForm(emptyMovieForm);
   }
 
   async function restoreSession(session: AuthSession) {
@@ -97,22 +134,21 @@ export function MovieShell() {
       ...init,
       headers: {
         "Content-Type": "application/json",
-        ...(authToken || token
-          ? { Authorization: `Bearer ${authToken || token}` }
-          : {}),
+        ...(authToken || token ? { Authorization: `Bearer ${authToken || token}` } : {}),
         ...(init?.headers ?? {}),
       },
     });
 
     if (!response.ok) {
       const text = await response.text();
-      let message = "Request failed";
+      let parsedMessage = "Request failed";
+
       if (text) {
         try {
           const payload = JSON.parse(text) as ApiError;
-          message = payload.message || text;
+          parsedMessage = payload.message || text;
         } catch {
-          message = text;
+          parsedMessage = text;
         }
       }
 
@@ -120,7 +156,7 @@ export function MovieShell() {
         clearSessionState();
       }
 
-      throw new Error(message);
+      throw new Error(parsedMessage);
     }
 
     if (response.status === 204) {
@@ -134,9 +170,7 @@ export function MovieShell() {
     setLoading(true);
     try {
       const query = title ? `?title=${encodeURIComponent(title)}` : "";
-      const data = await request<Movie[]>(`/movies${query}`, {
-        headers: {},
-      });
+      const data = await request<Movie[]>(`/movies${query}`);
       setMovies(data);
       if (selectedMovie) {
         const refreshed = data.find((movie) => movie.movieId === selectedMovie.movieId);
@@ -146,6 +180,18 @@ export function MovieShell() {
       setMessage(error instanceof Error ? error.message : "加载电影失败");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadLogs() {
+    setLogLoading(true);
+    try {
+      const data = await request<LogEntry[]>("/logs");
+      setLogs(data);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "加载日志失败");
+    } finally {
+      setLogLoading(false);
     }
   }
 
@@ -180,6 +226,7 @@ export function MovieShell() {
       setToken(data.token);
       setUser(data.user);
       saveAuthSession(data);
+      setMessage(data.user.manager ? "管理员登录成功" : "登录成功");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "登录失败");
     }
@@ -205,22 +252,40 @@ export function MovieShell() {
     }
   }
 
-  async function onCreateMovie(event: FormEvent<HTMLFormElement>) {
+  async function onSubmitMovie(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage("");
+
+    const payload = {
+      ...movieForm,
+      runtime: Number(movieForm.runtime),
+    };
+
     try {
-      await request<Movie>("/movies", {
-        method: "POST",
-        body: JSON.stringify({
-          ...movieForm,
-          runtime: Number(movieForm.runtime),
-        }),
-      });
-      setMovieForm(emptyMovieForm);
+      if (editingMovieId) {
+        const updatedMovie = await request<Movie>(`/movies/${editingMovieId}`, {
+          method: "PUT",
+          body: JSON.stringify(payload),
+        });
+        if (selectedMovie?.movieId === editingMovieId) {
+          setSelectedMovie(updatedMovie);
+        }
+        setMessage("电影已更新");
+      } else {
+        await request<Movie>("/movies", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        setMessage("电影已创建");
+      }
+
+      resetMovieEditor();
       await loadMovies();
-      setMessage("电影已创建");
+      if (user?.manager) {
+        await loadLogs();
+      }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "创建电影失败");
+      setMessage(error instanceof Error ? error.message : editingMovieId ? "更新电影失败" : "创建电影失败");
     }
   }
 
@@ -229,6 +294,7 @@ export function MovieShell() {
     if (!selectedMovie || !user) {
       return;
     }
+
     setMessage("");
     const formData = new FormData(event.currentTarget);
     try {
@@ -243,6 +309,9 @@ export function MovieShell() {
       event.currentTarget.reset();
       await loadMovieDetail(selectedMovie.movieId);
       await loadMovies();
+      if (user.manager) {
+        await loadLogs();
+      }
       setMessage("评论已发布");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "评论失败");
@@ -257,10 +326,29 @@ export function MovieShell() {
         setSelectedMovie(null);
         setReviews([]);
       }
+      if (editingMovieId === movieId) {
+        resetMovieEditor();
+      }
       await loadMovies();
+      if (user?.manager) {
+        await loadLogs();
+      }
+      setMessage("电影已删除");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "删除电影失败");
     }
+  }
+
+  function startEditingMovie(movie: Movie) {
+    setEditingMovieId(movie.movieId);
+    setMovieForm({
+      title: movie.title,
+      description: movie.description,
+      releaseDate: toDateInputValue(movie.releaseDate),
+      runtime: String(movie.runtime ?? ""),
+      posterImage: movie.posterImage ?? "",
+    });
+    setMessage(`正在编辑《${movie.title}》`);
   }
 
   if (!authReady) {
@@ -282,9 +370,12 @@ export function MovieShell() {
           <div className="auth-copy">
             <p className="eyebrow">Movies Control Room</p>
             <h1>用 Next.js 重建的前端入口。</h1>
-            <p className="lede">
-              前端运行在 3002，直接调用 3001 的 REST API，不再走 MVC 模板。
-            </p>
+            <p className="lede">前端运行在 3002，直接调用 3001 的 REST API，不再走 MVC 模板。</p>
+            <div className="root-hint">
+              <strong>内置管理员账号</strong>
+              <p>用户名：root</p>
+              <p>密码：root</p>
+            </div>
           </div>
           <div className="auth-card">
             <div className="tab-row">
@@ -305,8 +396,8 @@ export function MovieShell() {
             </div>
             {authMode === "login" ? (
               <form className="stack" onSubmit={onLogin}>
-                <input name="username" placeholder="用户名" required />
-                <input name="password" placeholder="密码" required type="password" />
+                <input defaultValue="root" name="username" placeholder="用户名" required />
+                <input defaultValue="root" name="password" placeholder="密码" required type="password" />
                 <button className="primary" type="submit">
                   登录系统
                 </button>
@@ -335,20 +426,27 @@ export function MovieShell() {
           <p className="eyebrow">Online</p>
           <h1>欢迎，{user.username}</h1>
           <p className="lede">
-            当前身份：{user.manager ? "管理员" : "普通用户"}，所有数据来自 Spring Boot API。
+            当前身份：{user.manager ? "管理员" : "普通用户"}。管理员可以进行电影增删改查，并查看系统日志。
           </p>
         </div>
         <div className="hero-actions">
           <button className="ghost" onClick={() => void loadMovies()}>
-            刷新列表
+            刷新电影
           </button>
+          {user.manager ? (
+            <button className="ghost" onClick={() => void loadLogs()}>
+              刷新日志
+            </button>
+          ) : null}
           <button
             className="ghost"
             onClick={() => {
               clearSessionState();
+              resetMovieEditor();
               setSelectedMovie(null);
               setReviews([]);
               setMovies([]);
+              setLogs([]);
               setMessage("");
             }}
           >
@@ -356,6 +454,110 @@ export function MovieShell() {
           </button>
         </div>
       </header>
+
+      {user.manager ? (
+        <section className="admin-hub">
+          <section className="panel admin-panel">
+            <div className="admin-panel-head">
+              <div>
+                <p className="eyebrow">Admin</p>
+                <h2>{editingMovieId ? "编辑电影" : "新增电影"}</h2>
+              </div>
+              {editingMovieId ? (
+                <button className="ghost" onClick={resetMovieEditor} type="button">
+                  取消编辑
+                </button>
+              ) : null}
+            </div>
+            <div className="admin-metrics">
+              <div className="metric-card">
+                <span>电影总数</span>
+                <strong>{movies.length}</strong>
+              </div>
+              <div className="metric-card">
+                <span>日志条数</span>
+                <strong>{logs.length}</strong>
+              </div>
+              <div className="metric-card">
+                <span>当前管理员</span>
+                <strong>{user.username}</strong>
+              </div>
+            </div>
+            <form className="stack" onSubmit={onSubmitMovie}>
+              <input
+                onChange={(event) => setMovieForm((current) => ({ ...current, title: event.target.value }))}
+                placeholder="电影名"
+                required
+                value={movieForm.title}
+              />
+              <textarea
+                onChange={(event) =>
+                  setMovieForm((current) => ({ ...current, description: event.target.value }))
+                }
+                placeholder="简介"
+                required
+                value={movieForm.description}
+              />
+              <input
+                onChange={(event) =>
+                  setMovieForm((current) => ({ ...current, releaseDate: event.target.value }))
+                }
+                required
+                type="date"
+                value={movieForm.releaseDate}
+              />
+              <input
+                onChange={(event) => setMovieForm((current) => ({ ...current, runtime: event.target.value }))}
+                placeholder="时长"
+                required
+                type="number"
+                value={movieForm.runtime}
+              />
+              <input
+                onChange={(event) =>
+                  setMovieForm((current) => ({ ...current, posterImage: event.target.value }))
+                }
+                placeholder="海报地址"
+                required
+                value={movieForm.posterImage}
+              />
+              <div className="form-actions">
+                <button className="primary" type="submit">
+                  {editingMovieId ? "保存修改" : "发布电影"}
+                </button>
+                <button className="ghost" onClick={resetMovieEditor} type="button">
+                  清空表单
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section className="panel admin-panel">
+            <div className="admin-panel-head">
+              <div>
+                <p className="eyebrow">Audit</p>
+                <h2>操作日志</h2>
+              </div>
+              <span className="status-pill">{logLoading ? "加载中" : "实时可查"}</span>
+            </div>
+            <div className="log-list">
+              {logs.length ? (
+                logs.map((log) => (
+                  <article className="log-card" key={log.id}>
+                    <div className="log-top">
+                      <strong>{log.userName}</strong>
+                      <span>{new Date(log.timestamp).toLocaleString()}</span>
+                    </div>
+                    <p>{log.methodName}</p>
+                  </article>
+                ))
+              ) : (
+                <p className="muted">当前还没有管理员操作日志。</p>
+              )}
+            </div>
+          </section>
+        </section>
+      ) : null}
 
       <section className="workspace">
         <div className="panel large">
@@ -384,13 +586,13 @@ export function MovieShell() {
               <article className="movie-card" key={movie.movieId}>
                 {movie.posterImage ? (
                   <img
-                    src={movie.posterImage}
                     alt={movie.title}
                     className="movie-poster"
                     loading="lazy"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
+                    onError={(event) => {
+                      (event.target as HTMLImageElement).style.display = "none";
                     }}
+                    src={movie.posterImage}
                   />
                 ) : (
                   <div className="movie-poster-placeholder">暂无海报</div>
@@ -402,13 +604,18 @@ export function MovieShell() {
                 <h3>{movie.title}</h3>
                 <p>{movie.description || "暂无简介"}</p>
                 <div className="card-actions">
-                  <button className="primary" onClick={() => void loadMovieDetail(movie.movieId)}>
+                  <button className="primary" onClick={() => void loadMovieDetail(movie.movieId)} type="button">
                     查看详情
                   </button>
                   {user.manager ? (
-                    <button className="ghost" onClick={() => void onDeleteMovie(movie.movieId)}>
-                      删除
-                    </button>
+                    <>
+                      <button className="ghost" onClick={() => startEditingMovie(movie)} type="button">
+                        编辑
+                      </button>
+                      <button className="ghost danger" onClick={() => void onDeleteMovie(movie.movieId)} type="button">
+                        删除
+                      </button>
+                    </>
                   ) : null}
                 </div>
               </article>
@@ -417,86 +624,18 @@ export function MovieShell() {
         </div>
 
         <aside className="panel sidebar">
-          {user.manager ? (
-            <section className="stack">
-              <h2>新增电影</h2>
-              <form className="stack" onSubmit={onCreateMovie}>
-                <input
-                  onChange={(event) =>
-                    setMovieForm((current) => ({ ...current, title: event.target.value }))
-                  }
-                  placeholder="电影名"
-                  required
-                  value={movieForm.title}
-                />
-                <textarea
-                  onChange={(event) =>
-                    setMovieForm((current) => ({
-                      ...current,
-                      description: event.target.value,
-                    }))
-                  }
-                  placeholder="简介"
-                  required
-                  value={movieForm.description}
-                />
-                <input
-                  onChange={(event) =>
-                    setMovieForm((current) => ({
-                      ...current,
-                      releaseDate: event.target.value,
-                    }))
-                  }
-                  required
-                  type="date"
-                  value={movieForm.releaseDate}
-                />
-                <input
-                  onChange={(event) =>
-                    setMovieForm((current) => ({ ...current, runtime: event.target.value }))
-                  }
-                  placeholder="时长"
-                  required
-                  type="number"
-                  value={movieForm.runtime}
-                />
-                <input
-                  onChange={(event) =>
-                    setMovieForm((current) => ({
-                      ...current,
-                      posterImage: event.target.value,
-                    }))
-                  }
-                  placeholder="海报地址"
-                  required
-                  value={movieForm.posterImage}
-                />
-                <button className="primary" type="submit">
-                  发布电影
-                </button>
-              </form>
-            </section>
-          ) : (
-            <section className="stack">
-              <h2>当前说明</h2>
-              <p className="muted">
-                普通用户可以浏览电影和发布评论。管理员额外拥有新增、删除电影的能力。
-              </p>
-            </section>
-          )}
-
           {selectedMovie ? (
             <section className="detail-column">
               <div className="detail-header">
                 <p className="eyebrow">Detail</p>
                 {selectedMovie.posterImage ? (
                   <img
-                    src={selectedMovie.posterImage}
                     alt={selectedMovie.title}
                     className="detail-poster"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
+                    onError={(event) => {
+                      (event.target as HTMLImageElement).style.display = "none";
                     }}
+                    src={selectedMovie.posterImage}
                   />
                 ) : null}
                 <h2>{selectedMovie.title}</h2>
@@ -529,7 +668,9 @@ export function MovieShell() {
           ) : (
             <section className="stack">
               <h2>电影详情</h2>
-              <p className="muted">从左侧选择一部电影后，这里会加载评论和提交入口。</p>
+              <p className="muted">
+                从左侧选择电影查看详情。管理员可直接在电影卡片上进行编辑和删除，也可以使用 root/root 登录。
+              </p>
             </section>
           )}
 

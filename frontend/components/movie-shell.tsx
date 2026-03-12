@@ -1,17 +1,12 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { clearAuthSession, loadAuthSession, saveAuthSession, type AuthSession, type AuthUser } from "../lib/auth";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:3001/api";
 
-type User = {
-  userId: number;
-  username: string;
-  email: string;
-  manager: boolean;
-  permission: boolean;
-};
+type User = AuthUser;
 
 type Movie = {
   movieId: number;
@@ -36,6 +31,10 @@ type Review = {
 
 type AuthMode = "login" | "register";
 
+type ApiError = {
+  message?: string;
+};
+
 const emptyMovieForm = {
   title: "",
   description: "",
@@ -47,6 +46,8 @@ const emptyMovieForm = {
 export function MovieShell() {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -56,24 +57,70 @@ export function MovieShell() {
   const [movieForm, setMovieForm] = useState(emptyMovieForm);
 
   useEffect(() => {
+    const session = loadAuthSession();
+    if (!session) {
+      setAuthReady(true);
+      return;
+    }
+
+    void restoreSession(session);
+  }, []);
+
+  useEffect(() => {
     if (!user) {
       return;
     }
     void loadMovies();
   }, [user]);
 
-  async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  function clearSessionState() {
+    clearAuthSession();
+    setToken(null);
+    setUser(null);
+  }
+
+  async function restoreSession(session: AuthSession) {
+    try {
+      const currentUser = await request<User>("/auth/me", undefined, session.token);
+      setToken(session.token);
+      setUser(currentUser);
+      saveAuthSession({ token: session.token, user: currentUser });
+    } catch {
+      clearSessionState();
+    } finally {
+      setAuthReady(true);
+    }
+  }
+
+  async function request<T>(path: string, init?: RequestInit, authToken?: string | null): Promise<T> {
     const response = await fetch(`${API_BASE}${path}`, {
       ...init,
       headers: {
         "Content-Type": "application/json",
+        ...(authToken || token
+          ? { Authorization: `Bearer ${authToken || token}` }
+          : {}),
         ...(init?.headers ?? {}),
       },
     });
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(text || "Request failed");
+      let message = "Request failed";
+      if (text) {
+        try {
+          const payload = JSON.parse(text) as ApiError;
+          message = payload.message || text;
+        } catch {
+          message = text;
+        }
+      }
+
+      if (response.status === 401) {
+        clearSessionState();
+      }
+
+      throw new Error(message);
     }
 
     if (response.status === 204) {
@@ -123,14 +170,16 @@ export function MovieShell() {
     setMessage("");
     const formData = new FormData(event.currentTarget);
     try {
-      const data = await request<User>("/auth/login", {
+      const data = await request<AuthSession>("/auth/login", {
         method: "POST",
         body: JSON.stringify({
           username: formData.get("username"),
           password: formData.get("password"),
         }),
       });
-      setUser(data);
+      setToken(data.token);
+      setUser(data.user);
+      saveAuthSession(data);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "登录失败");
     }
@@ -187,7 +236,6 @@ export function MovieShell() {
         method: "POST",
         body: JSON.stringify({
           movieId: selectedMovie.movieId,
-          userId: user.userId,
           content: formData.get("content"),
           score: Number(formData.get("score")),
         }),
@@ -213,6 +261,18 @@ export function MovieShell() {
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "删除电影失败");
     }
+  }
+
+  if (!authReady) {
+    return (
+      <main className="landing">
+        <section className="auth-panel">
+          <div className="auth-card">
+            <p className="muted">正在恢复登录状态...</p>
+          </div>
+        </section>
+      </main>
+    );
   }
 
   if (!user) {
@@ -285,7 +345,7 @@ export function MovieShell() {
           <button
             className="ghost"
             onClick={() => {
-              setUser(null);
+              clearSessionState();
               setSelectedMovie(null);
               setReviews([]);
               setMovies([]);

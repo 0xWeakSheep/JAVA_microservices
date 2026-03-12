@@ -1,11 +1,15 @@
 package edu.cuit.yingpingsxitong.Controller;
 
+import edu.cuit.yingpingsxitong.Auth.AdminOnly;
+import edu.cuit.yingpingsxitong.Auth.AuthConstants;
+import edu.cuit.yingpingsxitong.Auth.Authenticated;
 import edu.cuit.yingpingsxitong.Entity.Movie;
 import edu.cuit.yingpingsxitong.Entity.Review;
 import edu.cuit.yingpingsxitong.Entity.User;
 import edu.cuit.yingpingsxitong.Service.MovieService;
 import edu.cuit.yingpingsxitong.Service.ReviewService;
 import edu.cuit.yingpingsxitong.Service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,8 +50,10 @@ public class ReviewApiController {
     }
 
     @PostMapping
-    public ResponseEntity<Review> createReview(@RequestBody ReviewRequest request) {
-        Review review = new Review(request.movieId(), request.userId(), request.content(), request.score(), new Date());
+    @Authenticated
+    public ResponseEntity<Review> createReview(@RequestBody ReviewRequest request, HttpServletRequest httpRequest) {
+        User currentUser = (User) httpRequest.getAttribute(AuthConstants.AUTHENTICATED_USER);
+        Review review = new Review(request.movieId(), currentUser.getUserId(), request.content(), request.score(), new Date());
         reviewService.insertReview(review);
         movieService.updateAverageScore(request.movieId());
         fillDerivedField(review);
@@ -55,6 +61,7 @@ public class ReviewApiController {
     }
 
     @DeleteMapping("/{reviewId}")
+    @AdminOnly
     public ResponseEntity<Void> deleteReview(@PathVariable Integer reviewId) {
         Review review = reviewService.findReviewById(reviewId);
         if (review == null) {
@@ -82,6 +89,6 @@ public class ReviewApiController {
         }
     }
 
-    public record ReviewRequest(Integer movieId, Integer userId, String content, Integer score) {
+    public record ReviewRequest(Integer movieId, String content, Integer score) {
     }
 }

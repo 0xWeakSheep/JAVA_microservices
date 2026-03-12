@@ -1,5 +1,6 @@
 package edu.cuit.yingpingsxitong.Controller;
 
+import edu.cuit.yingpingsxitong.Auth.AdminOnly;
 import edu.cuit.yingpingsxitong.Entity.User;
 import edu.cuit.yingpingsxitong.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
+@AdminOnly
 public class UserApiController {
     private final UserService userService;
 

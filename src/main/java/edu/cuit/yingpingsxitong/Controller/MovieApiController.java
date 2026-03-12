@@ -1,5 +1,6 @@
 package edu.cuit.yingpingsxitong.Controller;
 
+import edu.cuit.yingpingsxitong.Auth.AdminOnly;
 import edu.cuit.yingpingsxitong.Entity.Movie;
 import edu.cuit.yingpingsxitong.Service.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ public class MovieApiController {
     }
 
     @PostMapping
+    @AdminOnly
     public ResponseEntity<Movie> createMovie(@RequestBody MovieRequest request) {
         Movie movie = new Movie(
                 request.title(),
@@ -53,6 +55,7 @@ public class MovieApiController {
     }
 
     @PutMapping("/{movieId}")
+    @AdminOnly
     public ResponseEntity<Movie> updateMovie(@PathVariable Integer movieId, @RequestBody MovieRequest request) {
         Movie existing = movieService.findMovieById(movieId);
         if (existing == null) {
@@ -68,6 +71,7 @@ public class MovieApiController {
     }
 
     @DeleteMapping("/{movieId}")
+    @AdminOnly
     public ResponseEntity<Void> deleteMovie(@PathVariable Integer movieId) {
         movieService.deleteMovie(movieId);
         return ResponseEntity.noContent().build();

@@ -1,5 +1,6 @@
 package edu.cuit.yingpingsxitong.Controller;
 
+import edu.cuit.yingpingsxitong.Auth.AdminOnly;
 import edu.cuit.yingpingsxitong.Entity.Log;
 import edu.cuit.yingpingsxitong.Service.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/logs")
+@AdminOnly
 public class LogApiController {
     private final LogService logService;
 

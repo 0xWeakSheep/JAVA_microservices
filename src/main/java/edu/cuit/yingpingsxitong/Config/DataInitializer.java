@@ -61,7 +61,7 @@ public class DataInitializer implements CommandLineRunner {
         movie1.setDescription("一场谋杀案使银行家安迪蒙冤入狱，谋杀妻子及其情人的罪名将他送进了肖申克监狱。在漫长的十九年牢狱生涯中，他用智慧和希望完成了自我救赎，也给了狱友瑞德重生的希望。");
         movie1.setReleaseDate(sdf.parse("1994-09-10"));
         movie1.setRuntime(142);
-        movie1.setPosterImage("https://img9.doubanio.com/view/photo/s_ratio_poster/public/p480747492.jpg");
+        movie1.setPosterImage("https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg");
         movie1.setAverageScore(9.7);
         movieRepository.save(movie1);
 
@@ -72,7 +72,7 @@ public class DataInitializer implements CommandLineRunner {
         movie2.setDescription("段小楼与程蝶衣是一对打小一起长大的师兄弟，两人一个演生，一个演旦，一向配合天衣无缝。尤其是《霸王别姬》更是名动京城。在动荡的时代背景下，两人的命运跌宕起伏，最终走向了悲剧的终点。");
         movie2.setReleaseDate(sdf.parse("1993-01-01"));
         movie2.setRuntime(171);
-        movie2.setPosterImage("https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2561716440.jpg");
+        movie2.setPosterImage("https://upload.wikimedia.org/wikipedia/en/3/38/Farewell_My_Concubine_poster.jpg");
         movie2.setAverageScore(9.6);
         movieRepository.save(movie2);
 
@@ -83,7 +83,7 @@ public class DataInitializer implements CommandLineRunner {
         movie3.setDescription("阿甘是个智商只有75的低能儿，但他的人生却充满了传奇色彩。他成为橄榄球明星、越战英雄、乒乓球外交使者、亿万富翁，他始终保持着纯真善良的本性，也见证了美国历史上的重要时刻。");
         movie3.setReleaseDate(sdf.parse("1994-07-06"));
         movie3.setRuntime(142);
-        movie3.setPosterImage("https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2372307693.jpg");
+        movie3.setPosterImage("https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg");
         movie3.setAverageScore(9.5);
         movieRepository.save(movie3);
 
@@ -94,7 +94,7 @@ public class DataInitializer implements CommandLineRunner {
         movie4.setDescription("1912年4月10日，号称「世界工业史上的奇迹」的豪华客轮泰坦尼克号开始了自己的处女航，从英国的南安普顿出发驶往美国纽约。富家少女罗丝与穷画家杰克在船上相遇并坠入爱河，然而灾难却在这时降临。");
         movie4.setReleaseDate(sdf.parse("1997-12-19"));
         movie4.setRuntime(194);
-        movie4.setPosterImage("https://img9.doubanio.com/view/photo/s_ratio_poster/public/p457760035.jpg");
+        movie4.setPosterImage("https://upload.wikimedia.org/wikipedia/en/1/18/Titanic_%281997_film%29_poster.png");
         movie4.setAverageScore(9.5);
         movieRepository.save(movie4);
 
@@ -105,7 +105,7 @@ public class DataInitializer implements CommandLineRunner {
         movie5.setDescription("千寻和爸爸妈妈一同驱车前往新家，在郊外的小路上不慎进入了神秘的隧道。他们来到了一个诡异的世界，千寻的爸爸妈妈因贪吃变成了猪，千寻为了拯救父母，在这个神灵世界中经历了一段奇妙的冒险。");
         movie5.setReleaseDate(sdf.parse("2001-07-20"));
         movie5.setRuntime(125);
-        movie5.setPosterImage("https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2557573348.jpg");
+        movie5.setPosterImage("https://upload.wikimedia.org/wikipedia/en/d/db/Spirited_Away_Japanese_poster.png");
         movie5.setAverageScore(9.4);
         movieRepository.save(movie5);
 
@@ -116,7 +116,7 @@ public class DataInitializer implements CommandLineRunner {
         movie6.setDescription("多姆·柯布是一位经验老道的窃贼，他在这一行业中是最顶尖的人才，因为他能够潜入人们精神最为脆弱的梦境中，窃取潜意识中有价值的秘密。这一次，他接受了一项看似不可能的任务：不是窃取想法，而是植入一个想法。");
         movie6.setReleaseDate(sdf.parse("2010-07-16"));
         movie6.setRuntime(148);
-        movie6.setPosterImage("https://img9.doubanio.com/view/photo/s_ratio_poster/public/p513344864.jpg");
+        movie6.setPosterImage("https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg");
         movie6.setAverageScore(9.4);
         movieRepository.save(movie6);
 
@@ -127,7 +127,7 @@ public class DataInitializer implements CommandLineRunner {
         movie7.setDescription("近未来的地球黄沙遍野，小麦、秋葵等基础农作物相继因枯萎病灭绝，人类面临灭绝危机。前NASA宇航员库珀临危受命，与布兰德等科学家一起穿越虫洞，去寻找适合人类居住的新星球。");
         movie7.setReleaseDate(sdf.parse("2014-11-07"));
         movie7.setRuntime(169);
-        movie7.setPosterImage("https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2614988097.jpg");
+        movie7.setPosterImage("https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg");
         movie7.setAverageScore(9.4);
         movieRepository.save(movie7);
 
@@ -138,7 +138,7 @@ public class DataInitializer implements CommandLineRunner {
         movie8.setDescription("楚门是一个标准的中产阶级，生活在一个美丽的小岛上，拥有一份稳定的工作和一个贤惠的妻子。然而，他不知道自己其实生活在一个巨大的摄影棚中，他的人生24小时被全球直播，周围的人都是演员，只有他自己被蒙在鼓里。");
         movie8.setReleaseDate(sdf.parse("1998-06-05"));
         movie8.setRuntime(103);
-        movie8.setPosterImage("https://img9.doubanio.com/view/photo/s_ratio_poster/public/p479682972.jpg");
+        movie8.setPosterImage("https://upload.wikimedia.org/wikipedia/en/c/cd/Truman_Show_poster.jpg");
         movie8.setAverageScore(9.3);
         movieRepository.save(movie8);
 
@@ -149,7 +149,7 @@ public class DataInitializer implements CommandLineRunner {
         movie9.setDescription("在一个所有动物和平共处的城市，兔子朱迪从小就梦想能成为动物城市的警察，尽管所有人都认为这是不可能的任务。通过自己的努力，她成为了第一个兔子警官，并与狐狸尼克联手侦破了一桩神秘案件。");
         movie9.setReleaseDate(sdf.parse("2016-03-04"));
         movie9.setRuntime(108);
-        movie9.setPosterImage("https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2614500706.jpg");
+        movie9.setPosterImage("https://upload.wikimedia.org/wikipedia/en/9/96/Zootopia_%28movie_poster%29.jpg");
         movie9.setAverageScore(9.2);
         movieRepository.save(movie9);
 
@@ -160,7 +160,7 @@ public class DataInitializer implements CommandLineRunner {
         movie10.setDescription("至尊宝被月光宝盒带回到五百年前，遇见紫霞仙子，被对方打上烙印成为对方的人，并发觉自己已变成孙悟空。紫霞与青霞本是如来佛祖座前日月神灯的灯芯，两人一正一邪，紫霞爱着至尊宝，而他却一心想要拿回月光宝盒回到现代。");
         movie10.setReleaseDate(sdf.parse("1995-02-04"));
         movie10.setRuntime(95);
-        movie10.setPosterImage("https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2564550533.jpg");
+        movie10.setPosterImage("https://upload.wikimedia.org/wikipedia/en/5/52/A_Chinese_Odyssey_Part_Two_Cinderella.jpg");
         movie10.setAverageScore(9.2);
         movieRepository.save(movie10);
 

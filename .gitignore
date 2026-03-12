@@ -33,3 +33,9 @@ build/
 .vscode/
 
 .env
+.env.*
+*.log
+.DS_Store
+.claude/
+frontend/.env
+frontend/.env.*

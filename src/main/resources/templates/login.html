@@ -1,139 +1,402 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-  <title>cuit影评</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(-45deg, 
-          #b8e2ff,  /* 中等浅蓝 */
-          #ffd6e6,  /* 中等浅粉 */
-          #c9ffe5,  /* 中等浅绿 */
-          #ffe1c4,  /* 中等浅橙 */
-          #e2d6ff   /* 中等浅紫 */
-      );
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      animation: gradientBG 15s ease infinite;
-      background-size: 400% 400%;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - Cuit影评</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    @keyframes gradientBG {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --accent-gold: #d4a853;
+            --accent-gold-hover: #e8bc6a;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(212, 168, 83, 0.3);
+            --shadow-gold: rgba(212, 168, 83, 0.15);
+        }
 
-    .login-container {
-      background-color: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(10px);
-      padding: 35px;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-      width: 320px;
-      transition: all 0.3s ease;
-    }
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
 
-    .login-container:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-    }
+        /* 背景装饰 */
+        .bg-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
 
-    h2 {
-      color: #2c3e50;
-      margin-bottom: 25px;
-      font-size: 24px;
-      text-align: center;
-      border-bottom: 3px solid #8ec5e8;
-      padding-bottom: 10px;
-    }
+        .bg-decoration::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(212, 168, 83, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.05) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 100%, rgba(212, 168, 83, 0.05) 0%, transparent 50%);
+            animation: bgMove 20s ease-in-out infinite;
+        }
 
-    form {
-      display: flex;
-      flex-direction: column;
-    }
+        @keyframes bgMove {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-2%, 2%) rotate(180deg); }
+        }
 
-    label {
-      margin-bottom: 8px;
-      color: #34495e;
-      font-weight: 500;
-    }
+        /* 登录容器 */
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 480px;
+            padding: 60px 50px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow:
+                0 40px 80px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(212, 168, 83, 0.1);
+        }
 
-    input[type="text"],
-    input[type="password"] {
-      padding: 12px;
-      margin-bottom: 20px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: all 0.3s ease;
-    }
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
 
-    input[type="text"]:focus,
-    input[type="password"]:focus {
-      border-color: #8ec5e8;
-      outline: none;
-      box-shadow: 0 0 5px rgba(142, 197, 232, 0.3);
-    }
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--accent-gold);
+            text-decoration: none;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
 
-    button {
-      padding: 12px;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 500;
-      margin-bottom: 15px;
-      transition: all 0.3s ease;
-      width: 100%;
-      letter-spacing: 1px;
-    }
+        .logo span {
+            color: var(--text-primary);
+        }
 
-    button[type="submit"] {
-      background: linear-gradient(45deg, #8ec5e8, #7fcac0);
-      color: white;
-      margin-top: 10px;
-    }
+        .login-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
 
-    button[type="submit"]:hover {
-      background: linear-gradient(45deg, #7fcac0, #8ec5e8);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(142, 197, 232, 0.4);
-    }
+        .login-header p {
+            color: var(--text-muted);
+            font-size: 15px;
+        }
 
-    .register-button {
-      background: linear-gradient(45deg, #ffd6e6, #e2d6ff);
-      color: #2c3e50;
-    }
+        /* 表单 */
+        .form-group {
+            margin-bottom: 25px;
+        }
 
-    .register-button:hover {
-      background: linear-gradient(45deg, #e2d6ff, #ffd6e6);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(255, 214, 230, 0.4);
-    }
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
 
-    button:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-  </style>
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px var(--shadow-gold);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-gold);
+            cursor: pointer;
+        }
+
+        .forgot-password {
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .forgot-password:hover {
+            color: var(--accent-gold-hover);
+        }
+
+        /* 按钮 */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #b8941d 100%);
+            color: #0a0a0f;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px var(--shadow-gold);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            background: rgba(212, 168, 83, 0.05);
+        }
+
+        /* 分隔线 */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-subtle);
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        /* 社交登录 */
+        .social-login {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .social-btn:hover {
+            border-color: var(--border-glow);
+            color: var(--text-primary);
+        }
+
+        /* 注册链接 */
+        .register-link {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .register-link a {
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* 返回首页 */
+        .back-home {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-home:hover {
+            color: var(--accent-gold);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 40px 30px;
+            }
+
+            .logo {
+                font-size: 28px;
+            }
+
+            .login-header h1 {
+                font-size: 24px;
+            }
+
+            .back-home {
+                top: 20px;
+                left: 20px;
+            }
+        }
+
+        /* 错误提示 */
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
 </head>
 <body>
-  <div class="login-container">
-    <form action="/index" method="POST">
-      <h2>登录</h2>
-      <label for="username">用户名:</label>
-      <input type="text" id="username" name="username" required>
+    <div class="bg-decoration"></div>
 
-      <label for="password">密码:</label>
-      <input type="password" id="password" name="password" required>
-      <button type="submit">登录</button>
-    </form>
-    <button class="register-button" onclick="location.href='/register';">注册</button>
-  </div>
+    <a href="/" class="back-home">
+        <span>←</span>
+        <span>返回首页</span>
+    </a>
+
+    <div class="login-container">
+        <div class="login-header">
+            <a href="/" class="logo">Cuit<span>影评</span></a>
+            <h1>欢迎回来</h1>
+            <p>登录你的账号，继续探索电影世界</p>
+        </div>
+
+        <form action="/index" method="POST">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" placeholder="请输入用户名" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" placeholder="请输入密码" required>
+            </div>
+
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox" name="remember">
+                    <span>记住我</span>
+                </label>
+                <a href="#" class="forgot-password">忘记密码？</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary">登录</button>
+        </form>
+
+        <div class="divider">
+            <span>或使用以下方式</span>
+        </div>
+
+        <div class="social-login">
+            <button class="social-btn">
+                <span>W</span>
+                <span>微信</span>
+            </button>
+            <button class="social-btn">
+                <span>Q</span>
+                <span>QQ</span>
+            </button>
+        </div>
+
+        <div class="register-link">
+            还没有账号？<a href="/register">立即注册</a>
+        </div>
+    </div>
 </body>
 </html>

@@ -322,6 +322,19 @@ export function MovieShell() {
           <div className="movie-grid">
             {movies.map((movie) => (
               <article className="movie-card" key={movie.movieId}>
+                {movie.posterImage ? (
+                  <img
+                    src={movie.posterImage}
+                    alt={movie.title}
+                    className="movie-poster"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="movie-poster-placeholder">暂无海报</div>
+                )}
                 <div className="movie-meta">
                   <span>{movie.runtime || "-"} min</span>
                   <span>{Number(movie.averageScore || 0).toFixed(1)}</span>
@@ -416,6 +429,16 @@ export function MovieShell() {
             <section className="detail-column">
               <div className="detail-header">
                 <p className="eyebrow">Detail</p>
+                {selectedMovie.posterImage ? (
+                  <img
+                    src={selectedMovie.posterImage}
+                    alt={selectedMovie.title}
+                    className="detail-poster"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : null}
                 <h2>{selectedMovie.title}</h2>
                 <p className="muted">{selectedMovie.description}</p>
               </div>

@@ -6,15 +6,27 @@ spring:
     name: movies-gateway
   cloud:
     gateway:
+      discovery:
+        locator:
+          enabled: true  # 自动从 Eureka 发现服务
+          lower-case-service-id: true
       routes:
         - id: movies-api
-          uri: http://localhost:3001
+          uri: lb://movies-service  # 使用服务名，支持负载均衡
           predicates:
             - Path=/api/**
         - id: movies-frontend
           uri: http://localhost:3002
           predicates:
             - Path=/**
+
+# Eureka Client 配置
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
 
 management:
   endpoints:

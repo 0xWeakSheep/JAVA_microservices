@@ -1,51 +1,57 @@
 # 项目架构图
 
+## 1. 微服务注册与调用关系图
+
 ```mermaid
 flowchart LR
-    U[用户浏览器]
+    U[用户 / 浏览器]
+    FE[前端应用<br/>Next.js<br/>Port 3002]
 
-    subgraph Client[前端层]
-        F[Next.js 前端<br/>React 19 / TypeScript<br/>Port 3002]
+    subgraph Registry[注册中心]
+        ES[Eureka Server<br/>服务注册与发现<br/>Port 8761]
     end
 
-    subgraph Gateway[接入层]
-        G[Spring Cloud Gateway<br/>统一入口 / 路由转发<br/>Port 3000]
+    subgraph Consumer[服务消费者]
+        GW[Spring Cloud Gateway<br/>movies-gateway<br/>Port 3000]
     end
 
-    subgraph Backend[业务层]
-        B[Spring Boot 后端<br/>REST API / JWT 鉴权 / AOP 日志<br/>Port 3001]
-        C1[Controller]
-        C2[Service]
-        C3[Repository]
+    subgraph Provider[服务提供者]
+        MS[Spring Boot 业务服务<br/>movies-service<br/>Port 3001]
     end
 
-    subgraph Data[数据层]
-        M[(MongoDB)]
-        M1[(users)]
-        M2[(movies)]
-        M3[(reviews)]
-        M4[(logs)]
-        M5[(database_sequences)]
-    end
+    DB[(MongoDB)]
 
-    U --> G
-    G -->|/**| F
-    G -->|/api/**| B
+    U -->|访问系统入口| GW
+    GW -->|/**| FE
+    FE -->|调用 /api/**| GW
+    GW -->|lb://movies-service| MS
+    MS --> DB
 
-    F -->|fetch / axios 调用接口| G
+    GW -.注册/续约.-> ES
+    MS -.注册/续约.-> ES
+    GW -.服务发现.-> ES
+```
 
-    B --> C1 --> C2 --> C3 --> M
-    M --> M1
-    M --> M2
-    M --> M3
-    M --> M4
-    M --> M5
+## 2. movies-service 内部包结构图
+
+```mermaid
+flowchart TD
+    A[movies-service]
+    A --> B[Controller 控制层]
+    A --> C[Service 业务层]
+    A --> D[Repository 数据访问层]
+    A --> E[Entity / Dto 数据模型]
+    A --> F[Auth 鉴权]
+    A --> G[Aspect 日志切面]
+    A --> H[Config 配置]
+    D --> I[(MongoDB)]
 ```
 
 ```text
-访问路径说明
-1. 用户统一访问网关入口：http://localhost:3000
-2. 网关将 /api/** 转发到 Spring Boot 后端：http://localhost:3001
-3. 网关将 /** 转发到 Next.js 前端：http://localhost:3002
-4. 后端通过 MongoDB 完成用户、电影、评论、日志与序列号数据读写
+说明
+1. Eureka Server 是服务注册中心，负责维护 movies-gateway 和 movies-service 的实例信息。
+2. movies-service 是服务提供者，提供用户、电影、评论、日志等 REST API。
+3. movies-gateway 是服务消费者和统一入口，通过 Eureka 发现并调用 movies-service。
+4. 网关将 /** 转发到前端，将 /api/** 转发到 movies-service。
+5. movies-service 通过 Repository 层访问 MongoDB。
 ```

@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>edu.cuit</groupId>
-    <artifactId>movies-gateway</artifactId>
+    <artifactId>eureka-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>movies-gateway</name>
-    <description>Reverse proxy gateway for movies services</description>
+    <name>eureka-server</name>
+    <description>Eureka Server for Service Registration and Discovery</description>
 
     <properties>
         <java.version>17</java.version>
@@ -35,14 +35,13 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- Eureka Server -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-gateway</artifactId>
+            <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-        </dependency>
+
+        <!-- Spring Boot Actuator -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -50,7 +49,7 @@
     </dependencies>
 
     <build>
-        <finalName>movies-gateway</finalName>
+        <finalName>eureka-server</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

@@ -1,12 +1,25 @@
 # Movies
 
+## 微服务架构
+
+项目采用 Spring Cloud 微服务架构，包含以下组件：
+
+- `eureka-server`：Eureka 注册中心，端口 `8761`
+- `config-server`：Spring Cloud Config 配置中心，端口 `8888`
+- `movies-gateway`：Spring Cloud Gateway 反向代理，端口 `3000`
+- `movies-backend`：Spring Boot 后端（movies-service），端口 `3001`
+- `movies-frontend`：Next.js 前端，端口 `3002`
+
+### 启动顺序
+1. eureka-server（注册中心）
+2. config-server（配置中心）
+3. movies-backend（业务服务，从配置中心拉取配置）
+4. movies-gateway（网关）
+5. movies-frontend（前端）
+
 ## PM2 运维管理
 
-项目现在按前后端两个独立进程交给 `pm2` 管理：
-
-- `movies-gateway`：Spring Cloud Gateway 反向代理，端口 `3000`
-- `movies-backend`：Spring Boot 后端，端口 `3001`
-- `movies-frontend`：Next.js 前端，端口 `3002`
+项目按独立进程交给 `pm2` 管理：
 
 根目录已经提供 `ecosystem.config.cjs`。
 

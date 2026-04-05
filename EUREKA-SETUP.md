@@ -1,10 +1,11 @@
-# Eureka 微服务架构启动指南
+# Eureka + Config Server 微服务架构启动指南
 
 ## 项目结构
 
 ```
 Movies/
 ├── eureka-server/          # Eureka 注册中心 (端口: 8761)
+├── config-server/          # Config Server 配置中心 (端口: 8888)
 ├── gateway/                # API 网关 (端口: 3000)
 ├── src/                    # 主服务 (端口: 3001)
 └── frontend/               # 前端应用 (端口: 3002)
@@ -21,14 +22,25 @@ mvn spring-boot:run
 
 访问控制台: http://localhost:8761
 
-### 2. 启动主服务（服务提供者）
+### 2. 启动 Config Server（配置中心）
+
+```bash
+cd config-server
+mvn spring-boot:run
+```
+
+验证配置接口: http://localhost:8888/movies-service/dev
+
+### 3. 启动主服务（服务提供者）
 
 ```bash
 cd /Users/caoxiangrui/Desktop/学习/大三下/weifuwu/Movies
 mvn spring-boot:run
 ```
 
-### 3. 启动 Gateway（服务消费者）
+主服务会自动从 Config Server 拉取配置启动。
+
+### 4. 启动 Gateway（服务消费者）
 
 ```bash
 cd gateway
@@ -47,8 +59,24 @@ npm run dev
 启动后访问 Eureka 控制台: http://localhost:8761
 
 应看到以下服务注册:
+- `CONFIG-SERVER` (配置中心)
 - `MOVIES-SERVICE` (主服务)
 - `MOVIES-GATEWAY` (网关)
+
+## 配置中心功能
+
+### 查看配置
+- http://localhost:8888/movies-service/dev - 开发环境配置
+- http://localhost:8888/movies-service/test - 测试环境配置
+- http://localhost:8888/movies-service/prod - 生产环境配置
+
+### 动态刷新配置
+```bash
+# 修改 Git 仓库中的配置后，发送刷新请求（无需重启服务）
+curl -X POST http://localhost:3001/actuator/refresh
+```
+
+详细配置中心说明请查看 [CONFIG-SERVER-SETUP.md](./CONFIG-SERVER-SETUP.md)
 
 ## 关键配置说明
 

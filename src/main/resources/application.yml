@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: movies-service
+  # 从 Config Server 导入配置
+  config:
+    import: "optional:configserver:http://localhost:8888"
+  cloud:
+    config:
+      # 默认使用 dev 环境
+      profile: dev
+      # 允许重试
+      fail-fast: false
+      # 重试配置
+      retry:
+        initial-interval: 1000
+        max-attempts: 6
+        max-interval: 2000
+        multiplier: 1.1
+  # 本地环境变量（这些会覆盖远程配置）
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/polymarket_db}
+
+server:
+  port: ${SERVER_PORT:3001}
+
+# JWT 配置
+app:
+  auth:
+    jwt-secret: ${JWT_SECRET:movies-jwt-secret-key-change-this-in-production-2026}
+    jwt-expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+# Eureka 客户端配置
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 10
+
+# Actuator 端点配置（用于动态刷新）
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh,env
+  endpoint:
+    health:
+      show-details: always

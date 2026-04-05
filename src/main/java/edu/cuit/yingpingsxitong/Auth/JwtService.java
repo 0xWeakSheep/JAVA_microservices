@@ -5,7 +5,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -13,16 +15,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Service
+@RefreshScope
 public class JwtService {
-    private final SecretKey signingKey;
-    private final long expirationMs;
+    @Value("${app.auth.jwt-secret}")
+    private String jwtSecret;
 
-    public JwtService(
-            @Value("${app.auth.jwt-secret}") String jwtSecret,
-            @Value("${app.auth.jwt-expiration-ms}") long expirationMs
-    ) {
+    @Value("${app.auth.jwt-expiration-ms}")
+    private long expirationMs;
+
+    private SecretKey signingKey;
+
+    @PostConstruct
+    public void init() {
         this.signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        this.expirationMs = expirationMs;
     }
 
     public String generateToken(User user) {

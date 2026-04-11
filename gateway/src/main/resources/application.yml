@@ -1,24 +1,31 @@
 server:
-  port: 3000
+  port: 9501
 
 spring:
   application:
-    name: movies-gateway
-  cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: true  # 自动从 Eureka 发现服务
-          lower-case-service-id: true
-      routes:
-        - id: movies-api
-          uri: lb://movies-service  # 使用服务名，支持负载均衡
-          predicates:
-            - Path=/api/**
-        - id: movies-frontend
-          uri: http://localhost:3002
-          predicates:
-            - Path=/**
+    name: zuul-gateway
+
+# Zuul 路由配置
+zuul:
+  routes:
+    # 部门服务路由
+    dept-service:
+      path: /dept/**
+      serviceId: dept-service
+    # 电影服务路由
+    movies-service:
+      path: /api/**
+      serviceId: movies-service
+    # 前端服务路由
+    frontend:
+      path: /**
+      url: http://localhost:3002
+  # 启用饥饿加载，加快首次访问速度
+  ribbon:
+    eager-load:
+      enabled: true
+  # 敏感头信息设置，允许传递Authorization等头
+  sensitive-headers:
 
 # Eureka Client 配置
 eureka:
@@ -27,9 +34,10 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway
+        include: health,info,routes, filters

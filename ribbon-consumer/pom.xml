@@ -13,7 +13,7 @@
     <artifactId>ribbon-consumer</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>ribbon-consumer</name>
-    <description>Ribbon Load Balancer Consumer</description>
+    <description>Load Balancer Consumer using Spring Cloud LoadBalancer</description>
     <properties>
         <java.version>11</java.version>
         <spring-cloud.version>2021.0.8</spring-cloud.version>
@@ -38,9 +38,19 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
+        <!-- Spring Cloud LoadBalancer (Ribbon替代品) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
         </dependency>
     </dependencies>
+    <build>
+        <finalName>ribbon-consumer</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -18,6 +18,14 @@
 	<modules>
 		<module>dept-service</module>
 		<module>gateway</module>
+		<!-- 实验三：Ribbon负载均衡 - 5个服务提供者 -->
+		<module>dept-service-provider-8001</module>
+		<module>dept-service-provider-8002</module>
+		<module>dept-service-provider-8003</module>
+		<module>dept-service-provider-8004</module>
+		<module>dept-service-provider-8005</module>
+		<!-- 实验三：Ribbon负载均衡 - 消费者 -->
+		<module>ribbon-consumer</module>
 	</modules>
 	<url/>
 	<licenses>

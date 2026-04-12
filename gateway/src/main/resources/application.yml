@@ -12,6 +12,7 @@ zuul:
     dept-service:
       path: /dept/**
       serviceId: dept-service
+      strip-prefix: false
     # 电影服务路由
     movies-service:
       path: /api/**

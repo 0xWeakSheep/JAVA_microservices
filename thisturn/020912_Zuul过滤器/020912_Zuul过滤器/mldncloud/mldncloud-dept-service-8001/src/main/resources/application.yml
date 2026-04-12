@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: mldncloud-dept-service                  # 定义微服务名称
+  datasource: 
+    type: com.alibaba.druid.pool.DruidDataSource  # 配置数据源类型
+    url: jdbc:mysql://localhost:3306/dept8001?useUnicode=true&characterEncoding=utf-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true    # 数据库的连接地址
+    driver-class-name: com.mysql.cj.jdbc.Driver    # 驱动程序
+    username: root                                # 用户名
+    password: 123456                          # 密码
+    dbcp2:                                        # 数据库连接池配置
+      min-idle: 1                                 # 最小维持连接数
+      max-idle: 1                                 # 最大维持连接数
+      max-total: 1                                # 最大的可用连接数
+      max-wait-millis: 200                        # 最大等待时间
+      initial-size: 1                             # 初始化连接数
+  jpa:                                            # 定义JPA的相关配置项
+    show-sql: true                                # 显示执行的SQL
+server:
+  port: 8001                                      # 服务端口
+
+eureka:
+  client:                                         # 客户端进行Eureka注册的配置
+    service-url:                                  # 定义Eureka服务地址
+      defaultZone: http://edmin:mldnjava@eureka-7001.com:7001/eureka
+  instance:
+    lease-renewal-interval-in-seconds: 2        # 设置心跳的时间间隔（默认是30秒）
+    lease-expiration-duration-in-seconds: 5     # 如果现在超过了5秒的间隔（默认是90秒）
+    instance-id: dept-8001.com                    # 显示主机名称
+    prefer-ip-address: false                       # 访问的路径变为IP地址
+
+info:
+  app.name: mldncloud-dept-service
+  company.name: www.mldn.cn
+  build.artifactId: $project.artifactId$
+  build.version: $project.version$
+
+
+security:
+  sessions: stateless    # 保持用户session状态
+  basic: 
+    enabled: true                                 # 启用SpringSecurity的安全配置项
+  user:                                           # 用户认证与授权信息
+    name: mldnjava                                # 认证用户名
+    password: hello                               # 认证密码
+    role:                                         # 授权角色
+    - USER
